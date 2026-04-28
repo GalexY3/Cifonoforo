@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sifonoforo Tracker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #221b17;
+      --muted: #7a6d64;
+      --line: #d8cfc3;
+      --paper: #f6f1e8;
+      --panel: #fffdf8;
+      --accent: #8f352d;
+      --accent-soft: #f1dfd8;
+      --olive: #657b48;
+      --amber: #cf7b2e;
+      --purple: #7454b8;
+      --danger: #a63832;
+      --shadow: 0 1px 0 rgba(34, 27, 23, .08), 0 12px 28px rgba(34, 27, 23, .06);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", Times, serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    button, input, select, textarea {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--panel);
+      color: var(--ink);
+      min-height: 38px;
+      padding: 8px 11px;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    button:hover { border-color: #b09b8f; background: #fbf5ea; }
+    button.primary { background: var(--accent); border-color: #742922; color: #fff; }
+    button.primary:hover { background: #792d26; }
+    button.warning { background: #fff6e7; border-color: #e5b574; color: #704008; }
+    button.danger { background: #fff1ed; border-color: #dfafa8; color: var(--danger); }
+    button.icon { width: 38px; padding: 0; display: inline-grid; place-items: center; }
+
+    header {
+      padding: 18px clamp(16px, 3vw, 36px) 14px;
+      border-bottom: 1px solid var(--line);
+      background: #eee4d7;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .topbar { display: flex; align-items: end; justify-content: space-between; gap: 16px; max-width: 1280px; margin: 0 auto; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 48px); letter-spacing: 0; font-weight: 400; }
+    .subtitle { color: var(--muted); margin-top: 4px; max-width: 760px; font-size: 15px; }
+    .shell { max-width: 1280px; margin: 0 auto; padding: 22px clamp(16px, 3vw, 36px) 42px; }
+    .grid { display: grid; grid-template-columns: minmax(320px, 440px) 1fr; gap: 18px; align-items: start; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    h2 { margin: 0 0 14px; font-size: 21px; letter-spacing: 0; font-weight: 400; }
+    h3 { margin: 0 0 10px; font-size: 17px; letter-spacing: 0; font-weight: 400; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #fffaf1;
+      color: var(--ink);
+      padding: 9px 10px;
+      min-height: 38px;
+    }
+    textarea { min-height: 82px; resize: vertical; }
+    .form-grid { display: grid; gap: 12px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .muted { color: var(--muted); }
+    .tiny { font-size: 12px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 3px;
+      border: 1px solid var(--line);
+      background: #f8f0e6;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .status {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 10px;
+      background: #fbf4e9;
+      min-height: 72px;
+    }
+    .stat strong { display: block; font-size: 28px; line-height: 1.1; font-weight: 400; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .tab[aria-selected="true"] { background: var(--accent-soft); border-color: #ba8a80; color: #6f251f; }
+    .main-stack { display: grid; gap: 18px; }
+    .timer {
+      display: grid;
+      grid-template-columns: minmax(180px, 260px) 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+    .time-face {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 12px solid var(--accent-soft);
+      display: grid;
+      place-items: center;
+      background: #fffaf1;
+    }
+    .time-face strong { font-size: clamp(34px, 5vw, 54px); font-weight: 400; }
+    .phase-list { display: grid; gap: 8px; }
+    .phase-row {
+      display: grid;
+      grid-template-columns: 112px 1fr 48px;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+    }
+    .bar { height: 10px; border-radius: 2px; background: #eadfce; overflow: hidden; }
+    .bar span { display: block; height: 100%; width: 0; background: var(--accent); }
+    .phase-row.active { color: var(--ink); font-weight: 700; }
+    .calendar-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+    .weekday { color: var(--muted); font-size: 12px; text-align: center; padding: 4px; }
+    .day {
+      min-height: 74px;
+      border-radius: 3px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid rgba(255,255,255,.55);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,.25);
+    }
+    .day.out { opacity: .45; }
+    .day.today { outline: 3px solid #221b17; outline-offset: 1px; }
+    .history { display: grid; gap: 8px; }
+    .entry {
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      background: #fffdf8;
+    }
+    .entry-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .chart-row { display: grid; grid-template-columns: 86px 1fr 28px; gap: 8px; align-items: center; margin: 8px 0; }
+    .empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 3px; padding: 16px; text-align: center; }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: var(--ink);
+      color: white;
+      border-radius: 3px;
+      padding: 10px 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: .2s ease;
+      z-index: 20;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 920px) {
+      .grid, .timer, .charts { grid-template-columns: 1fr; }
+      .status { grid-template-columns: repeat(2, 1fr); }
+      header { position: static; }
+    }
+    @media (max-width: 560px) {
+      .two, .status { grid-template-columns: 1fr; }
+      .topbar { align-items: start; flex-direction: column; }
+      .day { min-height: 58px; padding: 6px; }
+      .entry-head { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Sifonoforo Tracker</h1>
+        <div class="subtitle">Modulos horarios autonomos: foco, cuerpo, descanso y drenaje. Ligero, local y sin ceremonia extra.</div>
+      </div>
+      <div class="actions">
+        <button id="exportJson">Exportar JSON</button>
+        <label class="buttonlike">
+          <input id="importJson" type="file" accept="application/json" hidden>
+          <button type="button" id="importButton">Importar</button>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="grid">
+      <section class="panel">
+        <h2 id="formTitle">Registrar modulo</h2>
+        <form id="moduleForm" class="form-grid">
+          <input type="hidden" id="editId">
+          <div class="two">
+            <label>Fecha <input id="date" type="date" required></label>
+            <label>Inicio real <input id="start" type="time" required></label>
+          </div>
+          <div class="two">
+            <label>Tipo
+              <select id="type">
+                <option>Estudio</option><option>Produccion</option><option>Lectura</option>
+                <option>Ocio legitimo</option><option>Mantenimiento</option><option>Descanso</option>
+              </select>
+            </label>
+            <label>Carga
+              <select id="load">
+                <option>Duro</option><option>Medio</option><option>Blando</option><option>Ocio</option><option>Cierre</option>
+              </select>
+            </label>
+          </div>
+          <label>Objetivo minimo <input id="goal" placeholder="Ej. redactar 400 palabras del apartado metodologico" required></label>
+          <div class="two">
+            <label>Resultado
+              <select id="result"><option>Completo</option><option>Parcial</option><option>Fallido</option></select>
+            </label>
+            <label>Energia antes/despues
+              <div class="two">
+                <input id="energyBefore" type="number" min="1" max="5" value="3">
+                <input id="energyAfter" type="number" min="1" max="5" value="3">
+              </div>
+            </label>
+          </div>
+          <label>Notas <textarea id="notes" placeholder="Bloqueos, residuos, patron observado..."></textarea></label>
+          <div id="computedPlan" class="pill">Modulo normal: 40/3/10/7</div>
+          <div class="actions">
+            <button class="primary" type="submit">Guardar</button>
+            <button id="resetForm" type="button">Limpiar</button>
+            <button id="deleteEdit" class="danger" type="button" hidden>Borrar</button>
+          </div>
+        </form>
+      </section>
+
+      <div class="main-stack">
+        <section class="panel">
+          <div class="tabs" role="tablist">
+            <button class="tab" data-range="today" aria-selected="true">Hoy</button>
+            <button class="tab" data-range="week">7 dias</button>
+            <button class="tab" data-range="all">Todo</button>
+          </div>
+          <div class="status" id="summary"></div>
+          <div class="charts">
+            <div>
+              <h3>Cargas</h3>
+              <div id="loadChart"></div>
+            </div>
+            <div>
+              <h3>Tarde</h3>
+              <div id="afternoonChart"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="timer">
+            <div class="time-face"><strong id="timerClock">60:00</strong></div>
+            <div>
+              <h2>Temporizador por fases</h2>
+              <div class="muted tiny" id="timerHint">Usa el plan calculado a partir del inicio real.</div>
+              <label style="margin:10px 0 12px">Modo
+                <select id="timerMode">
+                  <option value="classic">Clasico: 40 foco + cuerpo + descanso + drenaje</option>
+                  <option value="split">Partido: 20 foco + 5 descanso + 20 foco + 5 descanso + cuerpo + drenaje</option>
+                </select>
+              </label>
+              <div class="phase-list" id="phaseList"></div>
+              <div class="actions" style="margin-top:12px">
+                <button class="primary" id="timerStart">Iniciar</button>
+                <button id="timerPause">Pausar</button>
+                <button id="timerReset">Reiniciar</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="calendar-head">
+            <h2 id="calendarTitle">Calendario</h2>
+            <div class="actions">
+              <button class="icon" id="prevMonth" title="Mes anterior">‹</button>
+              <button id="thisMonth">Hoy</button>
+              <button class="icon" id="nextMonth" title="Mes siguiente">›</button>
+            </div>
+          </div>
+          <div class="calendar-grid" id="calendar"></div>
+        </section>
+
+        <section class="panel">
+          <div class="entry-head">
+            <h2>Historial</h2>
+            <button class="danger" id="clearAll">Borrar todo</button>
+          </div>
+          <div id="history" class="history"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const KEY = "sifonoforo.modules.v1";
+    const timerModes = {
+      classic: {
+        label: "Clasico",
+        hint: "40 minutos seguidos de nucleo, luego cuerpo, descanso y drenaje.",
+        phases: () => {
+          const plan = planFromStart($("start").value);
+          return [
+            ["Nucleo", plan.phases[0]],
+            ["Cuerpo", plan.phases[1]],
+            ["Descanso", plan.phases[2]],
+            ["Drenaje", plan.phases[3]]
+          ];
+        }
+      },
+      split: {
+        label: "Partido",
+        hint: "20 estudio, 5 descanso, 20 estudio, 5 descanso, cuerpo y drenaje.",
+        phases: () => {
+          const plan = planFromStart($("start").value);
+          return [
+            ["Estudio 1", 20],
+            ["Descanso 1", 5],
+            ["Estudio 2", 20],
+            ["Descanso 2", 5],
+            ["Cuerpo", plan.phases[1]],
+            ["Drenaje", plan.phases[3]]
+          ];
+        }
+      }
+    };
+    const state = {
+      modules: JSON.parse(localStorage.getItem(KEY) || "[]"),
+      range: "today",
+      month: new Date(),
+      timer: { running: false, endAt: 0, remaining: 3600, total: 3600, interval: null, mode: "classic" }
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const pad = (n) => String(n).padStart(2, "0");
+    const isoDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const today = () => isoDate(new Date());
+    const hourSlot = (item) => `${item.date}T${(item.start || "00:00").slice(0, 2)}`;
+    const save = () => localStorage.setItem(KEY, JSON.stringify(state.modules));
+    const toast = (msg) => {
+      $("toast").textContent = msg;
+      $("toast").classList.add("show");
+      setTimeout(() => $("toast").classList.remove("show"), 1900);
+    };
+
+    function planFromStart(time) {
+      const minute = Number((time || "00:00").split(":")[1] || 0);
+      let plan = { mode: "Normal", phases: [40, 3, 10, 7] };
+      if (minute <= 7) plan.phases[3] = Math.max(0, 7 - minute);
+      else if (minute <= 20) {
+        const drain = Math.max(0, 14 - minute);
+        const nucleus = Math.max(20, 60 - minute - 3 - 8 - drain);
+        plan = { mode: "Comprimido", phases: [nucleus, 3, 8, drain] };
+      }
+      else plan = { mode: "Residual", phases: [20, 3, 7, 0] };
+      if (minute > 40) plan = { mode: "Mantenimiento", phases: [12, 3, 5, 0] };
+      return plan;
+    }
+
+    function formData() {
+      const plan = planFromStart($("start").value);
+      return {
+        id: $("editId").value || crypto.randomUUID(),
+        date: $("date").value,
+        start: $("start").value,
+        type: $("type").value,
+        load: $("load").value,
+        goal: $("goal").value.trim(),
+        result: $("result").value,
+        energyBefore: Number($("energyBefore").value),
+        energyAfter: Number($("energyAfter").value),
+        notes: $("notes").value.trim(),
+        mode: plan.mode,
+        phases: plan.phases,
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function completeConflict(item) {
+      if (item.result !== "Completo") return false;
+      return state.modules.some(existing =>
+        existing.id !== item.id &&
+        existing.result === "Completo" &&
+        hourSlot(existing) === hourSlot(item)
+      );
+    }
+
+    function fillForm(item) {
+      $("formTitle").textContent = "Editar modulo";
+      $("editId").value = item.id;
+      $("date").value = item.date;
+      $("start").value = item.start;
+      $("type").value = item.type;
+      $("load").value = item.load;
+      $("goal").value = item.goal;
+      $("result").value = item.result;
+      $("energyBefore").value = item.energyBefore;
+      $("energyAfter").value = item.energyAfter;
+      $("notes").value = item.notes || "";
+      $("deleteEdit").hidden = false;
+      updateComputedPlan();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function resetForm() {
+      $("moduleForm").reset();
+      $("formTitle").textContent = "Registrar modulo";
+      $("editId").value = "";
+      $("date").value = today();
+      $("start").value = `${pad(new Date().getHours())}:00`;
+      $("deleteEdit").hidden = true;
+      updateComputedPlan();
+    }
+
+    function updateComputedPlan() {
+      const plan = planFromStart($("start").value);
+      $("computedPlan").textContent = `${plan.mode}: ${plan.phases.join("/")}`;
+      resetTimerPlan();
+    }
+
+    function currentTimerPhases() {
+      return timerModes[state.timer.mode].phases().filter((phase) => phase[1] > 0);
+    }
+
+    function resetTimerPlan() {
+      const phases = currentTimerPhases();
+      state.timer.total = phases.reduce((total, phase) => total + phase[1], 0) * 60;
+      state.timer.remaining = state.timer.total;
+      $("timerHint").textContent = timerModes[state.timer.mode].hint;
+      renderTimer();
+    }
+
+    function filtered() {
+      const now = new Date();
+      if (state.range === "all") return state.modules;
+      if (state.range === "today") return state.modules.filter(m => m.date === today());
+      const start = new Date(now);
+      start.setDate(now.getDate() - 6);
+      return state.modules.filter(m => new Date(m.date + "T00:00") >= new Date(isoDate(start) + "T00:00"));
+    }
+
+    function countBy(items, field) {
+      return items.reduce((acc, item) => {
+        acc[item[field]] = (acc[item[field]] || 0) + 1;
+        return acc;
+      }, {});
+    }
+
+    function renderSummary() {
+      const items = filtered();
+      const complete = items.filter(m => m.result === "Completo").length;
+      const hard = items.filter(m => m.load === "Duro").length;
+      const avgDelta = items.length ? (items.reduce((a, m) => a + (m.energyAfter - m.energyBefore), 0) / items.length).toFixed(1) : "0.0";
+      $("summary").innerHTML = [
+        ["Modulos", items.length],
+        ["Completos", complete],
+        ["Duros", hard],
+        ["Energia", avgDelta]
+      ].map(([label, value]) => `<div class="stat"><strong>${value}</strong><span class="muted tiny">${label}</span></div>`).join("");
+      renderChart("loadChart", countBy(items, "load"), ["Duro", "Medio", "Blando", "Ocio", "Cierre"]);
+      const afternoon = items.filter(m => Number(m.start.slice(0,2)) >= 15 && Number(m.start.slice(0,2)) <= 22);
+      renderChart("afternoonChart", countBy(afternoon, "load"), ["Duro", "Medio", "Blando", "Ocio", "Cierre"]);
+    }
+
+    function renderChart(id, counts, labels) {
+      const max = Math.max(1, ...labels.map(l => counts[l] || 0));
+      $(id).innerHTML = labels.map(label => {
+        const n = counts[label] || 0;
+        return `<div class="chart-row"><span class="tiny muted">${label}</span><div class="bar"><span style="width:${(n / max) * 100}%"></span></div><span class="tiny">${n}</span></div>`;
+      }).join("");
+    }
+
+    function renderHistory() {
+      const items = [...state.modules].sort((a,b) => (b.date + b.start).localeCompare(a.date + a.start));
+      $("history").innerHTML = items.length ? items.map(item => `
+        <article class="entry">
+          <div class="entry-head">
+            <div>
+              <strong>${item.date} ${item.start}</strong>
+              <div class="muted tiny">${item.goal}</div>
+            </div>
+            <div class="actions">
+              <button data-edit="${item.id}">Editar</button>
+            </div>
+          </div>
+          <div class="chips">
+            <span class="pill">${item.type}</span><span class="pill">${item.load}</span><span class="pill">${item.result}</span><span class="pill">${item.mode}</span>
+            <span class="pill">energia ${item.energyBefore}→${item.energyAfter}</span>
+          </div>
+          ${item.notes ? `<div class="muted tiny">${item.notes}</div>` : ""}
+        </article>`).join("") : `<div class="empty">Aun no hay sifonoforos registrados.</div>`;
+    }
+
+    function colorForCount(count) {
+      const t = Math.min(count, 5) / 5;
+      const a = [114, 81, 201];
+      const b = [217, 121, 34];
+      const rgb = a.map((v, i) => Math.round(v + (b[i] - v) * t));
+      return `rgb(${rgb.join(",")})`;
+    }
+
+    function renderCalendar() {
+      const y = state.month.getFullYear();
+      const m = state.month.getMonth();
+      const title = state.month.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+      $("calendarTitle").textContent = title.charAt(0).toUpperCase() + title.slice(1);
+      const counts = state.modules.reduce((acc, item) => (acc[item.date] = (acc[item.date] || 0) + 1, acc), {});
+      const first = new Date(y, m, 1);
+      const start = new Date(first);
+      start.setDate(1 - ((first.getDay() + 6) % 7));
+      const week = ["L", "M", "X", "J", "V", "S", "D"].map(d => `<div class="weekday">${d}</div>`).join("");
+      let days = "";
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const key = isoDate(d);
+        const n = counts[key] || 0;
+        const cls = ["day", d.getMonth() !== m ? "out" : "", key === today() ? "today" : ""].join(" ");
+        days += `<div class="${cls}" style="background:${colorForCount(n)}"><strong>${d.getDate()}</strong><span class="tiny">${n} sif.</span></div>`;
+      }
+      $("calendar").innerHTML = week + days;
+    }
+
+    function renderTimer() {
+      const remaining = Math.max(0, state.timer.remaining);
+      $("timerClock").textContent = `${pad(Math.floor(remaining / 60))}:${pad(remaining % 60)}`;
+      const phases = currentTimerPhases();
+      const total = phases.reduce((a,b) => a + b[1], 0) * 60;
+      let elapsed = total - remaining;
+      $("phaseList").innerHTML = phases.map((phase) => {
+        const seconds = phase[1] * 60;
+        const active = elapsed >= 0 && elapsed < seconds;
+        const done = Math.min(1, Math.max(0, elapsed / Math.max(1, seconds)));
+        elapsed -= seconds;
+        return `<div class="phase-row ${active ? "active" : ""}"><span>${phase[0]}</span><div class="bar"><span style="width:${done * 100}%"></span></div><span class="tiny">${phase[1]}m</span></div>`;
+      }).join("");
+    }
+
+    function tickTimer() {
+      state.timer.remaining = Math.max(0, Math.ceil((state.timer.endAt - Date.now()) / 1000));
+      renderTimer();
+      if (state.timer.remaining <= 0) {
+        clearInterval(state.timer.interval);
+        state.timer.running = false;
+        toast("Modulo terminado");
+      }
+    }
+
+    function renderAll() {
+      renderSummary();
+      renderHistory();
+      renderCalendar();
+      renderTimer();
+    }
+
+    $("moduleForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const item = formData();
+      if (completeConflict(item)) {
+        toast("Ya hay un sifonoforo completo en esa hora");
+        return;
+      }
+      const index = state.modules.findIndex(m => m.id === item.id);
+      if (index >= 0) state.modules[index] = { ...state.modules[index], ...item };
+      else state.modules.push(item);
+      save();
+      resetForm();
+      renderAll();
+      toast("Modulo guardado");
+    });
+    $("resetForm").addEventListener("click", resetForm);
+    $("deleteEdit").addEventListener("click", () => {
+      const id = $("editId").value;
+      state.modules = state.modules.filter(m => m.id !== id);
+      save(); resetForm(); renderAll(); toast("Modulo borrado");
+    });
+    $("start").addEventListener("input", updateComputedPlan);
+    $("timerMode").addEventListener("change", () => {
+      clearInterval(state.timer.interval);
+      state.timer.running = false;
+      state.timer.mode = $("timerMode").value;
+      resetTimerPlan();
+    });
+    $("history").addEventListener("click", (event) => {
+      const id = event.target.dataset.edit;
+      if (id) fillForm(state.modules.find(m => m.id === id));
+    });
+    document.querySelectorAll(".tab").forEach(button => button.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", "false"));
+      button.setAttribute("aria-selected", "true");
+      state.range = button.dataset.range;
+      renderSummary();
+    }));
+    $("prevMonth").addEventListener("click", () => { state.month.setMonth(state.month.getMonth() - 1); renderCalendar(); });
+    $("nextMonth").addEventListener("click", () => { state.month.setMonth(state.month.getMonth() + 1); renderCalendar(); });
+    $("thisMonth").addEventListener("click", () => { state.month = new Date(); renderCalendar(); });
+    $("clearAll").addEventListener("click", () => {
+      if (confirm("Borrar todos los modulos guardados?")) {
+        state.modules = []; save(); resetForm(); renderAll(); toast("Historial borrado");
+      }
+    });
+    $("exportJson").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state.modules, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `sifonoforo-backup-${today()}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    $("importButton").addEventListener("click", () => $("importJson").click());
+    $("importJson").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!Array.isArray(data)) return toast("JSON no valido");
+        state.modules = data;
+        save(); renderAll(); toast("Datos importados");
+        event.target.value = "";
+      } catch {
+        toast("JSON no valido");
+      }
+    });
+    $("timerStart").addEventListener("click", () => {
+      if (state.timer.running) return;
+      state.timer.running = true;
+      state.timer.endAt = Date.now() + state.timer.remaining * 1000;
+      state.timer.interval = setInterval(tickTimer, 250);
+      tickTimer();
+    });
+    $("timerPause").addEventListener("click", () => {
+      if (!state.timer.running) return;
+      clearInterval(state.timer.interval);
+      state.timer.remaining = Math.max(0, Math.ceil((state.timer.endAt - Date.now()) / 1000));
+      state.timer.running = false;
+      renderTimer();
+    });
+    $("timerReset").addEventListener("click", () => {
+      clearInterval(state.timer.interval);
+      state.timer.running = false;
+      updateComputedPlan();
+    });
+
+    resetForm();
+    renderAll();
+  </script>
+</body>
+</html>
