@@ -1,0 +1,23 @@
+# Entornos virtuales y dependencias
+venv/
+env/
+.env
+__pycache__/
+
+# Datasets y bases de datos locales
+*.csv
+*.tsv
+*.parquet
+*.sqlite3
+
+# Modelos serializados (Machine Learning)
+*.pkl
+*.h5
+*.joblib
+
+# Metadatos de Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
